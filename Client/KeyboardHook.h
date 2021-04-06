@@ -1,7 +1,7 @@
 #ifndef KEYBOARDHOOK_H
 #define KEYBOARDHOOK_H
 
-#include <winuser.h>
+#include <windows.h>
 #include <fstream>
 #include <string>
 
@@ -16,6 +16,7 @@ void WriteKey(int key);
 LRESULT __stdcall HookCallback(int nCode, WPARAM wParam, LPARAM lParam);
 
 void SetHook(std::string logFile);
+
 
 #endif
 
