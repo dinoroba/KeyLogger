@@ -2,21 +2,15 @@
 
 #define WIN32_LEAN_AND_MEAN
 
-#include <windows.h>
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <iostream>
-#include <unistd.h>
+#include "Communication/Communication.h"
 
 #pragma comment (lib, "Ws2_32.lib")
 
 #define DEFAULT_BUFLEN 512
 #define DEFAULT_PORT "27017"
 
-int main(void) 
-{
+int main(void) {
+
     WSADATA wsaData;
     int iResult;
 
@@ -91,36 +85,10 @@ int main(void)
             closesocket(ListenSocket);
         }
 
-        do {
+        ReadUsername(ClientSocket);
 
-            
-
-            int filesize = recv(ClientSocket, recvbuf, , 0);
-
-
-
-
-
-        }
-
-        // Receive until the peer shuts down the connection
-        do {
-
-            iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
-            if (iResult > 0) {
-                printf("Bytes received: %d\n", iResult);
-                printf("%s\n", recvbuf);
-            }
-            else if (iResult == 0){
-                printf("Messagge Received\n");
-            }else  {
-                printf("recv failed with error: %d\n", WSAGetLastError());
-                end_connection = true,
-                closesocket(ClientSocket);
-            }
-
-        } while (!end_connection && iResult > 0);
-
+        std::cout << RecvFile(ClientSocket, "testi", chunksize_file) << std::endl;
+        
         // shutdown the connection since we're done
         iResult = shutdown(ClientSocket, SD_SEND);
         if (iResult == SOCKET_ERROR) {
@@ -128,10 +96,10 @@ int main(void)
             closesocket(ClientSocket);
         }
 
-        // cleanup
         closesocket(ClientSocket);
     }
 
     WSACleanup();
     return 0;
+
 }
