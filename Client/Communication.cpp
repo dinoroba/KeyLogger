@@ -12,6 +12,82 @@
 //Define here the ipaddress you will be using in the server side
 #define DEFAULT_IP_ADDRESS "127.0.0.1"
 
+void Communicate_with_server(SOCKET connection_socket, std::string logFile){
+
+    SendUsername(connection_socket);
+
+    SendFile(connection_socket, logFile, chunksize_file);
+
+    CloseConnection(connection_socket);
+
+}
+    
+SOCKET SetUpConnectionSocket(){
+
+    WSADATA wsaData;
+    SOCKET ConnectSocket = INVALID_SOCKET;
+    struct addrinfo *result = NULL,
+                    *ptr = NULL,
+                    hints;
+    int iResult;
+
+    // Initialize Winsock
+    iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
+    if (iResult != 0) {
+        printf("WSAStartup failed with error: %d\n", iResult);
+        return -1;
+    }
+
+    ZeroMemory( &hints, sizeof(hints) );
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;
+
+    // Resolve the server address and port
+    iResult = getaddrinfo(DEFAULT_IP_ADDRESS, DEFAULT_PORT, &hints, &result);
+    if ( iResult != 0 ) {
+        printf("getaddrinfo failed with error: %d\n", iResult);
+        WSACleanup();
+        return -1;
+    }
+
+    // Create a SOCKET for connecting to server
+    ConnectSocket = socket(result->ai_family, result->ai_socktype, 
+        result->ai_protocol);
+
+    if (ConnectSocket == INVALID_SOCKET) {
+        printf("socket failed with error: %ld\n", WSAGetLastError());
+        WSACleanup();
+        return -1;
+    }
+
+    // Connect to server.
+    iResult = connect(ConnectSocket, result->ai_addr, (int)result->ai_addrlen);
+    if (iResult == SOCKET_ERROR) {
+        closesocket(ConnectSocket);
+        ConnectSocket = INVALID_SOCKET;
+        freeaddrinfo(result);
+        std::cout << "unable to connect to server" << std::endl;
+        WSACleanup();
+        return -1;
+    }
+
+    return ConnectSocket;
+
+}
+
+void CloseConnection(SOCKET connection_socket){
+
+    if (shutdown(connection_socket, SD_SEND) == SOCKET_ERROR) {
+        printf("shutdown failed with error: %d\n", WSAGetLastError());
+    }
+
+    closesocket(connection_socket);
+    WSACleanup();
+}
+
+
+
 void SendUsername(SOCKET connection_socket){
 
     char* username = std::getenv("USERNAME");
@@ -47,86 +123,8 @@ void SendUsername(SOCKET connection_socket){
             username += bytes_sent;
         }
     }while(nBytes > 0);
-
-    std::cout << bytes_sent << std::endl;
 }
 
-int main(){
-
-    WSADATA wsaData;
-    SOCKET ConnectSocket = INVALID_SOCKET;
-    struct addrinfo *result = NULL,
-                    *ptr = NULL,
-                    hints;
-    int iResult;
-
-    // Initialize Winsock
-    iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
-    if (iResult != 0) {
-        printf("WSAStartup failed with error: %d\n", iResult);
-        sleep(10);
-        return 1;
-    }
-
-    ZeroMemory( &hints, sizeof(hints) );
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_protocol = IPPROTO_TCP;
-
-    // Resolve the server address and port
-    iResult = getaddrinfo(DEFAULT_IP_ADDRESS, DEFAULT_PORT, &hints, &result);
-    if ( iResult != 0 ) {
-        printf("getaddrinfo failed with error: %d\n", iResult);
-        sleep(10);
-        WSACleanup();
-        return 1;
-    }
-
-    // Create a SOCKET for connecting to server
-    ConnectSocket = socket(result->ai_family, result->ai_socktype, 
-        result->ai_protocol);
-
-    if (ConnectSocket == INVALID_SOCKET) {
-        printf("socket failed with error: %ld\n", WSAGetLastError());
-        sleep(10);
-        WSACleanup();
-        return 1;
-    }
-
-    // Connect to server.
-    iResult = connect( ConnectSocket, result->ai_addr, (int)result->ai_addrlen);
-    if (iResult == SOCKET_ERROR) {
-        closesocket(ConnectSocket);
-        ConnectSocket = INVALID_SOCKET;
-        freeaddrinfo(result);
-        std::cout << "unable to connect to server" << std::endl;
-        sleep(10);
-        WSACleanup();
-        return 1;
-    }
-
-
-    SendUsername(ConnectSocket);
-
-    SendFile(ConnectSocket, "teste.txt", chunksize_file);
-
-    sleep(5);
-
-    // shutdown the connection since no more data will be sent
-    iResult = shutdown(ConnectSocket, SD_SEND);
-    if (iResult == SOCKET_ERROR) {
-        printf("shutdown failed with error: %d\n", WSAGetLastError());
-        sleep(10);
-        closesocket(ConnectSocket);
-        WSACleanup();
-        return 1;
-    }
-
-    // cleanup
-    closesocket(ConnectSocket);
-    WSACleanup();
-    return 1;
-}
 
 
 int64_t GetFileSize(const std::string& fileName) {
@@ -154,27 +152,17 @@ int SendBuffer(SOCKET connection_socket, const char* buffer, int bufferSize, int
 int64_t SendFile(SOCKET connection_socket, const std::string& fileName, int chunkSize) {
 
     const int64_t fileSize = GetFileSize(fileName);
-    std::cout << "tou aqui1" << std::endl;
-    sleep(10);
     if (fileSize < 0) { 
         return -1; 
         }
-    std::cout << "tou aqui2" << std::endl;
-    sleep(10);
     std::ifstream file(fileName, std::ifstream::binary);
     if (file.fail()) { 
         return -1; 
         }
-    std::cout << "tou aqui3" << std::endl;
-    sleep(10);
     if (SendBuffer(connection_socket, reinterpret_cast<const char*>(&fileSize),
         sizeof(fileSize), chunksize_buffer) != sizeof(fileSize)) {
-        std::cout << "tou aqui" << std::endl;
-        sleep(10);
         return -2;
     }
-    std::cout << "afinal aqui" << std::endl;
-    sleep(10);
 
 
     char* buffer = new char[chunkSize];

