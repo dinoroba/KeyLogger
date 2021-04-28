@@ -1,7 +1,5 @@
 #undef UNICODE
 
-#define WIN32_LEAN_AND_MEAN
-
 #include "Communication/Communication.h"
 
 #define DEFAULT_PORT "27017"

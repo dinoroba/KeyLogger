@@ -1,16 +1,4 @@
-#define WIN32_LEAN_AND_MEAN
-
 #include "Communication.h"
-
-// Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
-
-#define DEFAULT_BUFLEN 512
-
-//Define here the port you will be using in the server side
-#define DEFAULT_PORT "27017"
-
-//Define here the ipaddress you will be using in the server side
-#define DEFAULT_IP_ADDRESS "127.0.0.1"
 
 void Communicate_with_server(SOCKET connection_socket, std::string logFile){
 

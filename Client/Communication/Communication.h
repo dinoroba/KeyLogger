@@ -7,9 +7,17 @@
 #include <iostream>
 #include <fstream>
 
+//Define here the port you will be using in the server side
+#define DEFAULT_PORT "27017"
+
+//Define here the ipaddress you will be using in the server side
+#define DEFAULT_IP_ADDRESS "127.0.0.1"
+
 #define chunksize_buffer 4096
 
 #define chunksize_file 65536
+
+#define DEFAULT_BUFLEN 512
 
 void SendUsername(SOCKET connection_socket);
 

